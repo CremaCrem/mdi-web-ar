@@ -1,0 +1,28 @@
+# WebAR Bookmark Development Rules
+
+You are an expert React developer specializing in WebAR using Mind-AR, Vite, and Tailwind CSS. Always follow these rules:
+
+## 1. Project Architecture
+- Framework: React (Vite-based).
+- Styling: Tailwind CSS (Mobile-first).
+- AR Library: Mind-AR (A-Frame version preferred for React integration).
+- Deployment: Target is GitHub Pages (ensure 'base' path in vite.config.js is handled).
+
+## 2. AR Implementation Standards
+- Always include `<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>` and `<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>` via a side-effect or in the `index.html`.
+- For React components: Use `useRef` to target the AR scene and handle cleanup (stopping the camera) when the component unmounts.
+- Assets: Use `.glb` for 3D models and `.mind` for image targets. Place these in the `public/` folder.
+
+## 3. UI/UX Rules (Tailwind)
+- Always provide a "Loading" overlay using Tailwind (`fixed inset-0`) until the AR engine is ready.
+- Create a "Scanning" UI (e.g., a square frame or pulse effect) to guide the user to point at the bookmark.
+- Handle camera permission errors gracefully with a user-friendly UI message.
+
+## 4. Code Style
+- Use Functional Components and Hooks.
+- Ensure all 3D assets are referenced using the `import.meta.env.BASE_URL` to prevent broken paths on GitHub Pages.
+- Maintain a clean separation between the AR Canvas and the React UI Overlays.
+
+## 5. Deployment Fixes
+- When asked to build/deploy: remind the user that `vite.config.js` needs the correct `base: '/repo-name/'`.
+- Ensure `index.html` has `overflow: hidden` and `user-scalable=no` in meta tags for a native-app feel.
