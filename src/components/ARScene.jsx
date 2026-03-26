@@ -3,13 +3,17 @@ import { useEffect, useRef, useState } from 'react'
 const TARGET_FILE = `${import.meta.env.BASE_URL}targets/bookmark.mind`
 const SANTO_NINO_MODEL = `${import.meta.env.BASE_URL}santo_nino.glb`
 const TLR_CAMERA_MODEL = `${import.meta.env.BASE_URL}tlr_camera.glb`
+const BLUE_LAMP_MODEL = `${import.meta.env.BASE_URL}blue_lamp.glb`
+const CIBORIUM_MODEL = `${import.meta.env.BASE_URL}ciborium.glb`
+const SKULL_MODEL = `${import.meta.env.BASE_URL}skull.glb`
+const UKULELE_MODEL = `${import.meta.env.BASE_URL}ukulele.glb`
 
 function ARScene() {
   const sceneRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
   const [cameraError, setCameraError] = useState('')
   
-  // Track which target is currently "locked" (0, 1, or null)
+  // Track which target is currently "locked" (0-5, or null)
   const [activeTarget, setActiveTarget] = useState(null)
   const timeoutRef = useRef(null)
 
@@ -118,6 +122,54 @@ function ARScene() {
           <a-gltf-model
             src={TLR_CAMERA_MODEL}
             visible={activeTarget === 1}
+            position="0 0 0"
+            rotation="0 0 0"
+            scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
+          />
+        </a-entity>
+
+        {/* Target 2: Blue Lamp */}
+        <a-entity mindar-image-target="targetIndex: 2">
+          <a-gltf-model
+            src={BLUE_LAMP_MODEL}
+            visible={activeTarget === 2}
+            position="0 0 0"
+            rotation="0 0 0"
+            scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
+          />
+        </a-entity>
+
+        {/* Target 3: Ciborium */}
+        <a-entity mindar-image-target="targetIndex: 3">
+          <a-gltf-model
+            src={CIBORIUM_MODEL}
+            visible={activeTarget === 3}
+            position="0 0 0"
+            rotation="0 0 0"
+            scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
+          />
+        </a-entity>
+
+        {/* Target 4: Skull */}
+        <a-entity mindar-image-target="targetIndex: 4">
+          <a-gltf-model
+            src={SKULL_MODEL}
+            visible={activeTarget === 4}
+            position="0 0 0"
+            rotation="0 0 0"
+            scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
+          />
+        </a-entity>
+
+        {/* Target 5: Ukulele */}
+        <a-entity mindar-image-target="targetIndex: 5">
+          <a-gltf-model
+            src={UKULELE_MODEL}
+            visible={activeTarget === 5}
             position="0 0 0"
             rotation="0 0 0"
             scale="1 1 1"
