@@ -8,10 +8,16 @@ function ARScene() {
   const sceneRef = useRef(null)
   const [isLoading, setIsLoading] = useState(true)
   const [cameraError, setCameraError] = useState('')
+  
+  // Track which target is currently "locked" (0, 1, or null)
+  const [activeTarget, setActiveTarget] = useState(null)
+  const timeoutRef = useRef(null)
 
   useEffect(() => {
     const sceneEl = sceneRef.current
     if (!sceneEl) return
+    const targetEntities = sceneEl.querySelectorAll('[mindar-image-target]')
+    const targetListeners = []
 
     const handleARReady = () => {
       setIsLoading(false)
@@ -19,38 +25,70 @@ function ARScene() {
     }
 
     const handleARError = (event) => {
-      const errorMessage = event?.detail?.error
-      setCameraError(
-        errorMessage || 'Camera access failed. Allow camera permissions and try again.',
-      )
+      setCameraError(event?.detail?.error || 'Camera access failed.')
       setIsLoading(false)
+    }
+
+    const getTargetIndex = (event, entity) => {
+      const detailIndex = event?.detail?.targetIndex
+      if (Number.isInteger(detailIndex)) return detailIndex
+
+      const targetAttr = entity.getAttribute('mindar-image-target')
+      if (typeof targetAttr === 'object' && targetAttr !== null) {
+        const parsed = Number(targetAttr.targetIndex)
+        if (!Number.isNaN(parsed)) return parsed
+      }
+
+      if (typeof targetAttr === 'string') {
+        const match = targetAttr.match(/targetIndex:\s*(\d+)/)
+        if (match) return Number(match[1])
+      }
+
+      return null
     }
 
     sceneEl.addEventListener('arReady', handleARReady)
     sceneEl.addEventListener('arError', handleARError)
 
+    // Mind-AR target events can emit with null detail, so derive index safely.
+    targetEntities.forEach((entity) => {
+      const handleTargetFound = (event) => {
+        const index = getTargetIndex(event, entity)
+        if (index === null) return
+
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        setActiveTarget(index)
+      }
+
+      const handleTargetLost = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        timeoutRef.current = setTimeout(() => {
+          setActiveTarget(null)
+        }, 5000)
+      }
+
+      entity.addEventListener('targetFound', handleTargetFound)
+      entity.addEventListener('targetLost', handleTargetLost)
+      targetListeners.push({ entity, handleTargetFound, handleTargetLost })
+    })
+
     return () => {
       sceneEl.removeEventListener('arReady', handleARReady)
       sceneEl.removeEventListener('arError', handleARError)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
-      const mindarSystem = sceneEl.systems?.['mindar-image-system']
-      if (mindarSystem?.stop) {
-        mindarSystem.stop()
-      }
-
-      // Extra camera cleanup to prevent camera lock between route changes.
-      const videoEls = document.querySelectorAll('video')
-      videoEls.forEach((video) => {
-        const stream = video.srcObject
-        if (stream && typeof stream.getTracks === 'function') {
-          stream.getTracks().forEach((track) => track.stop())
-        }
+      targetListeners.forEach(({ entity, handleTargetFound, handleTargetLost }) => {
+        entity.removeEventListener('targetFound', handleTargetFound)
+        entity.removeEventListener('targetLost', handleTargetLost)
       })
+      
+      const mindarSystem = sceneEl.systems?.['mindar-image-system']
+      if (mindarSystem?.stop) mindarSystem.stop()
     }
   }, [])
 
   return (
-    <main className="ar-root fixed inset-0 z-0 h-[100svh] w-screen overflow-hidden text-white">
+    <main className="ar-root fixed inset-0 z-0 h-[100svh] w-screen overflow-hidden text-white bg-black">
       <a-scene
         ref={sceneRef}
         mindar-image={`imageTargetSrc: ${TARGET_FILE}; autoStart: true; uiScanning: false; uiLoading: false; uiError: false; filterMinCF: 0.0001; filterBeta: 0.0005;`}
@@ -63,9 +101,11 @@ function ARScene() {
       >
         <a-camera position="0 0 0" look-controls="enabled: false" />
 
+        {/* Target 0: Santo Nino */}
         <a-entity mindar-image-target="targetIndex: 0">
           <a-gltf-model
             src={SANTO_NINO_MODEL}
+            visible={activeTarget === 0}
             position="0 0 0"
             rotation="0 0 0"
             scale="1 1 1"
@@ -73,9 +113,11 @@ function ARScene() {
           />
         </a-entity>
 
+        {/* Target 1: TLR Camera */}
         <a-entity mindar-image-target="targetIndex: 1">
           <a-gltf-model
             src={TLR_CAMERA_MODEL}
+            visible={activeTarget === 1}
             position="0 0 0"
             rotation="0 0 0"
             scale="1 1 1"
@@ -84,19 +126,19 @@ function ARScene() {
         </a-entity>
       </a-scene>
 
+      {/* Overlays */}
       {isLoading && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/80 text-lg font-semibold">
-          Loading AR...
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black text-lg font-semibold">
+          Initializing Camera...
         </div>
       )}
 
-      <div className="pointer-events-none fixed inset-0 z-10 flex items-center justify-center">
-        <div className="h-60 w-60 rounded-2xl border-4 border-white/80 shadow-[0_0_30px_rgba(255,255,255,0.35)]" />
-      </div>
-
-      <p className="pointer-events-none fixed bottom-8 left-1/2 z-10 w-[90%] max-w-md -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 text-center text-sm">
-        Aim your camera at the bookmark target image.
-      </p>
+      {/* Instruction text (Removed the square div) */}
+      {!isLoading && activeTarget === null && (
+        <p className="pointer-events-none fixed bottom-12 left-1/2 z-10 w-[80%] -translate-x-1/2 rounded-xl bg-black/40 px-6 py-3 text-center text-sm backdrop-blur-md">
+          Scan the illustration on your bookmark
+        </p>
+      )}
 
       {cameraError && (
         <div className="fixed inset-x-4 top-4 z-30 rounded-xl border border-red-500/60 bg-red-900/75 p-3 text-sm text-red-100">
