@@ -50,40 +50,36 @@ function ARScene() {
   }, [])
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden text-white">
+    <main className="fixed inset-0 z-0 h-[100svh] w-screen overflow-hidden text-white">
       <a-scene
         ref={sceneRef}
         mindar-image={`imageTargetSrc: ${TARGET_FILE}; autoStart: true; uiScanning: false; uiLoading: false; uiError: false; filterMinCF: 0.0001; filterBeta: 0.0005;`}
         color-space="sRGB"
         embedded
         renderer="colorManagement: true, physicallyCorrectLights; alpha: true"
-        style={{ backgroundColor: 'transparent' }}
+        style={{ backgroundColor: 'transparent', width: '100vw', height: '100svh' }}
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
       >
         <a-camera position="0 0 0" look-controls="enabled: false" />
 
-        <a-entity
-          mindar-image-target="targetIndex: 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
-        >
+        <a-entity mindar-image-target="targetIndex: 0">
           <a-gltf-model
             src={SANTO_NINO_MODEL}
             position="0 0 0"
             rotation="0 0 0"
             scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
           />
         </a-entity>
 
-        <a-entity
-          mindar-image-target="targetIndex: 1"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
-        >
+        <a-entity mindar-image-target="targetIndex: 1">
           <a-gltf-model
             src={TLR_CAMERA_MODEL}
             position="0 0 0"
             rotation="0 0 0"
             scale="1 1 1"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear;"
           />
         </a-entity>
       </a-scene>
