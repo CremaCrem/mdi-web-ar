@@ -16,6 +16,7 @@ function ARScene() {
   // Track which target is currently "locked" (0-5, or null)
   const [activeTarget, setActiveTarget] = useState(null)
   const timeoutRef = useRef(null)
+  const initTimeoutRef = useRef(null)
 
   useEffect(() => {
     const sceneEl = sceneRef.current
@@ -24,11 +25,13 @@ function ARScene() {
     const targetListeners = []
 
     const handleARReady = () => {
+      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current)
       setIsLoading(false)
       setCameraError('')
     }
 
     const handleARError = (event) => {
+      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current)
       setCameraError(event?.detail?.error || 'Camera access failed.')
       setIsLoading(false)
     }
@@ -53,6 +56,13 @@ function ARScene() {
 
     sceneEl.addEventListener('arReady', handleARReady)
     sceneEl.addEventListener('arError', handleARError)
+
+    // Some mobile/browser combos never emit arError on camera bootstrap failure.
+    // Fallback to a user-facing message instead of an endless loading overlay.
+    initTimeoutRef.current = setTimeout(() => {
+      setIsLoading(false)
+      setCameraError('Camera initialization timed out. Allow camera permission and reload.')
+    }, 12000)
 
     // Mind-AR target events can emit with null detail, so derive index safely.
     targetEntities.forEach((entity) => {
@@ -80,6 +90,7 @@ function ARScene() {
       sceneEl.removeEventListener('arReady', handleARReady)
       sceneEl.removeEventListener('arError', handleARError)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (initTimeoutRef.current) clearTimeout(initTimeoutRef.current)
 
       targetListeners.forEach(({ entity, handleTargetFound, handleTargetLost }) => {
         entity.removeEventListener('targetFound', handleTargetFound)
