@@ -2,10 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// GitHub Pages repo path; change if your repo name differs.
-const githubPagesBase = '/mdi-web-ar/'
-
-export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? githubPagesBase : '/',
+// Vercel deployment at the site root.
+// This ensures Vite generates URLs like /assets/... and Mind-AR uses the correct BASE_URL.
+export default defineConfig({
+  base: '/',
   plugins: [react(), tailwindcss()],
-}))
+})
