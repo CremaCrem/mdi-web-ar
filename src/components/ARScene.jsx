@@ -6,7 +6,7 @@ const TLR_CAMERA_MODEL = `${import.meta.env.BASE_URL}tlr_camera.glb`
 const BLUE_LAMP_MODEL = `${import.meta.env.BASE_URL}blue_lamp.glb`
 const CIBORIUM_MODEL = `${import.meta.env.BASE_URL}ciborium.glb`
 const SKULL_MODEL = `${import.meta.env.BASE_URL}skull.glb`
-const UKULELE_MODEL = `${import.meta.env.BASE_URL}ukulele.glb`
+const POTTERY_MODEL = `${import.meta.env.BASE_URL}pottery.glb`
 
 function ARScene() {
   const sceneRef = useRef(null)
@@ -176,10 +176,10 @@ function ARScene() {
           />
         </a-entity>
 
-        {/* Target 5: Ukulele */}
+        {/* Target 5: Pottery */}
         <a-entity mindar-image-target="targetIndex: 5">
           <a-gltf-model
-            src={UKULELE_MODEL}
+            src={POTTERY_MODEL}
             visible={activeTarget === 5}
             position="0 0 0"
             rotation="0 0 0"
